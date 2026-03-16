@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import WebhookStatus from './WebhookStatus';
 
 const DEFAULT_STATUSES = [
   'Interested',
@@ -67,6 +68,9 @@ export default function Settings() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      {/* Webhook Status */}
+      <WebhookStatus />
+
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">⚙️ Settings</h1>

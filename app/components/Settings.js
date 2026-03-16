@@ -15,6 +15,8 @@ export default function Settings() {
   const [newJobType, setNewJobType] = useState('');
   const [feedback, setFeedback] = useState('');
   const [loading, setLoading] = useState(true);
+  const [twilioStep, setTwilioStep] = useState(0);
+  const [twilioConnected, setTwilioConnected] = useState(false);
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -26,6 +28,10 @@ export default function Settings() {
         console.error('Failed to load job types:', e);
       }
     }
+    
+    const connected = localStorage.getItem('twilioConnected');
+    setTwilioConnected(!!connected);
+    
     setLoading(false);
   }, []);
 
@@ -62,6 +68,17 @@ export default function Settings() {
     setTimeout(() => setFeedback(''), 2000);
   };
 
+  const handleMarkTwilioComplete = () => {
+    localStorage.setItem('twilioConnected', 'true');
+    setTwilioConnected(true);
+    setTwilioStep(0);
+    setFeedback('✅ Twilio integration marked as complete!');
+    setTimeout(() => setFeedback(''), 3000);
+    
+    // Notify other components
+    window.dispatchEvent(new Event('onboarding-update'));
+  };
+
   if (loading) {
     return <div className="text-center py-8">Loading...</div>;
   }
@@ -77,6 +94,223 @@ export default function Settings() {
         <p className="text-slate-600 dark:text-slate-400">
           Customize your lead tracking system. Define job types and manage statuses.
         </p>
+      </div>
+
+      {/* Twilio Integration Section */}
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-6">
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              📱 Integrate SMS Leads
+              {twilioConnected && (
+                <span className="text-xs font-semibold px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200 rounded-full">
+                  ✓ Connected
+                </span>
+              )}
+            </h2>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+              Receive leads directly via SMS. Set up takes about 5 minutes.
+            </p>
+          </div>
+        </div>
+
+        {!twilioConnected ? (
+          <div className="space-y-4">
+            {/* Step-by-step guide */}
+            <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg p-4 mb-4">
+              <p className="text-sm text-blue-900 dark:text-blue-100">
+                <strong>⚡ Quick Setup:</strong> Follow these steps to enable SMS lead capture.
+              </p>
+            </div>
+
+            {/* Step 1 */}
+            <div
+              className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                twilioStep === 1
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
+                  : 'border-slate-200 dark:border-slate-600 hover:border-slate-300'
+              }`}
+              onClick={() => setTwilioStep(twilioStep === 1 ? 0 : 1)}
+            >
+              <div className="flex items-start gap-3">
+                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white font-bold text-sm flex-shrink-0">
+                  1
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-slate-900 dark:text-white">Get Twilio Account</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                    Sign up or log into your Twilio account.
+                  </p>
+                  {twilioStep === 1 && (
+                    <div className="mt-3 p-3 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-600">
+                      <p className="text-sm text-slate-700 dark:text-slate-300 mb-3">
+                        👉 Visit{' '}
+                        <a
+                          href="https://www.twilio.com/console"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+                        >
+                          twilio.com/console
+                        </a>
+                      </p>
+                      <button
+                        onClick={() => setTwilioStep(2)}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded transition-colors text-sm"
+                      >
+                        Next →
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div
+              className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                twilioStep === 2
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
+                  : 'border-slate-200 dark:border-slate-600 hover:border-slate-300'
+              }`}
+              onClick={() => setTwilioStep(twilioStep === 2 ? 0 : 2)}
+            >
+              <div className="flex items-start gap-3">
+                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white font-bold text-sm flex-shrink-0">
+                  2
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-slate-900 dark:text-white">Copy Your Phone Number</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                    Get your Twilio phone number from the Console.
+                  </p>
+                  {twilioStep === 2 && (
+                    <div className="mt-3 p-3 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-600">
+                      <p className="text-sm text-slate-700 dark:text-slate-300 mb-2">
+                        Your Twilio phone number will be used to receive SMS leads.
+                      </p>
+                      <input
+                        type="text"
+                        placeholder="+1 (555) 123-4567"
+                        className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-500 text-sm mb-3"
+                      />
+                      <button
+                        onClick={() => setTwilioStep(3)}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded transition-colors text-sm"
+                      >
+                        Next →
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div
+              className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                twilioStep === 3
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
+                  : 'border-slate-200 dark:border-slate-600 hover:border-slate-300'
+              }`}
+              onClick={() => setTwilioStep(twilioStep === 3 ? 0 : 3)}
+            >
+              <div className="flex items-start gap-3">
+                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white font-bold text-sm flex-shrink-0">
+                  3
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-slate-900 dark:text-white">Set Webhook URL</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                    Paste the webhook URL into Twilio's SMS settings.
+                  </p>
+                  {twilioStep === 3 && (
+                    <div className="mt-3 p-3 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-600">
+                      <p className="text-sm text-slate-700 dark:text-slate-300 mb-2">
+                        In Twilio Console, go to Phone Numbers → Active Numbers → Your Number → Messaging.
+                      </p>
+                      <p className="text-sm font-mono bg-slate-100 dark:bg-slate-700 p-2 rounded mb-3 text-slate-900 dark:text-white">
+                        {typeof window !== 'undefined'
+                          ? `${window.location.origin}/api/webhook/sms`
+                          : '/api/webhook/sms'}
+                      </p>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(
+                            `${typeof window !== 'undefined' ? window.location.origin : ''}/api/webhook/sms`
+                          );
+                          alert('Webhook URL copied to clipboard!');
+                        }}
+                        className="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white font-medium rounded transition-colors text-sm mr-2"
+                      >
+                        Copy URL
+                      </button>
+                      <button
+                        onClick={() => setTwilioStep(4)}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded transition-colors text-sm"
+                      >
+                        Next →
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Step 4 */}
+            <div
+              className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                twilioStep === 4
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
+                  : 'border-slate-200 dark:border-slate-600 hover:border-slate-300'
+              }`}
+              onClick={() => setTwilioStep(twilioStep === 4 ? 0 : 4)}
+            >
+              <div className="flex items-start gap-3">
+                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white font-bold text-sm flex-shrink-0">
+                  4
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-slate-900 dark:text-white">Test SMS</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                    Send a test message to verify it works.
+                  </p>
+                  {twilioStep === 4 && (
+                    <div className="mt-3 p-3 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-600">
+                      <p className="text-sm text-slate-700 dark:text-slate-300 mb-3">
+                        Send a test SMS to your Twilio number in the format: "roof repair 5000"
+                      </p>
+                      <button
+                        onClick={handleMarkTwilioComplete}
+                        className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded transition-colors text-sm"
+                      >
+                        ✓ Mark Complete
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="p-4 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 rounded-lg">
+            <div className="flex items-start gap-3">
+              <span className="text-2xl">✓</span>
+              <div>
+                <h3 className="font-semibold text-green-900 dark:text-green-100">Setup Complete</h3>
+                <p className="text-sm text-green-800 dark:text-green-200 mt-1">
+                  Your Twilio integration is active. You can now receive SMS leads!
+                </p>
+                <button
+                  onClick={() => setTwilioConnected(false)}
+                  className="text-sm text-green-700 dark:text-green-300 hover:underline mt-2 font-medium"
+                >
+                  Configure Again
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Default Statuses Section */}

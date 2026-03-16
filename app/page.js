@@ -1,12 +1,35 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DashboardHome from './components/DashboardHome';
 import LeadsBreakdown from './components/LeadsBreakdown';
 import Settings from './components/Settings';
+import OnboardingWizard from './components/OnboardingWizard';
+import OnboardingChecklist from './components/OnboardingChecklist';
 
 export default function Home() {
   const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard', 'leads', or 'settings'
+  const [showWizard, setShowWizard] = useState(false);
+
+  // Check if this is first load
+  useEffect(() => {
+    const setupComplete = localStorage.getItem('setupComplete');
+    const businessName = localStorage.getItem('businessName');
+    const leadsData = localStorage.getItem('leads');
+
+    // Show wizard if setup not complete, no business name, and no leads
+    if (!setupComplete && !businessName && !leadsData) {
+      setShowWizard(true);
+    }
+  }, []);
+
+  const handleWizardComplete = () => {
+    setShowWizard(false);
+  };
+
+  const handleWizardSkip = () => {
+    setShowWizard(false);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
@@ -55,6 +78,16 @@ export default function Home() {
         {currentView === 'leads' && <LeadsBreakdown />}
         {currentView === 'settings' && <Settings />}
       </main>
+
+      {/* Onboarding Wizard - shows on first load */}
+      <OnboardingWizard
+        isOpen={showWizard}
+        onComplete={handleWizardComplete}
+        onSkip={handleWizardSkip}
+      />
+
+      {/* Onboarding Checklist - always visible in bottom-right */}
+      <OnboardingChecklist isDarkMode={false} />
     </div>
   );
 }

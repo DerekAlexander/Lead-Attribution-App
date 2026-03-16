@@ -70,6 +70,10 @@ export default function LeadQuickAdd({ onLeadAdded }) {
     onLeadAdded(newLead);
     setFeedback(`✅ Lead added: ${parsed.service} - $${parsed.value}`);
     setQuickText('');
+    
+    // Notify checklist that a lead was added
+    window.dispatchEvent(new Event('onboarding-update'));
+    
     setTimeout(() => setFeedback(''), 3000);
   };
 
@@ -113,6 +117,10 @@ export default function LeadQuickAdd({ onLeadAdded }) {
       value: '',
       source: 'Direct',
     });
+    
+    // Notify checklist that a lead was added
+    window.dispatchEvent(new Event('onboarding-update'));
+    
     setTimeout(() => setFeedback(''), 3000);
   };
 

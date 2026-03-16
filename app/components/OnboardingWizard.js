@@ -2,12 +2,10 @@
 
 import { useState, useEffect } from 'react';
 
-const JOB_TYPES_OPTIONS = ['Roof Repair', 'Estimate', 'Replacement', 'Other'];
-
 export default function OnboardingWizard({ isOpen, onComplete, onSkip }) {
   const [currentStep, setCurrentStep] = useState(1);
   const [businessName, setBusinessName] = useState('');
-  const [selectedJobTypes, setSelectedJobTypes] = useState([]);
+  const [jobTypes, setJobTypes] = useState(['']);
   const [skipTwilio, setSkipTwilio] = useState(false);
   const [leadData, setLeadData] = useState({
     name: '',
@@ -26,7 +24,7 @@ export default function OnboardingWizard({ isOpen, onComplete, onSkip }) {
         const data = JSON.parse(saved);
         setCurrentStep(data.currentStep || 1);
         setBusinessName(data.businessName || '');
-        setSelectedJobTypes(data.selectedJobTypes || []);
+        setJobTypes(data.jobTypes || ['']);
         setSkipTwilio(data.skipTwilio || false);
         setLeadData(data.leadData || leadData);
       } catch (e) {
@@ -40,12 +38,12 @@ export default function OnboardingWizard({ isOpen, onComplete, onSkip }) {
     const progress = {
       currentStep,
       businessName,
-      selectedJobTypes,
+      jobTypes,
       skipTwilio,
       leadData,
     };
     localStorage.setItem('onboarding_progress', JSON.stringify(progress));
-  }, [currentStep, businessName, selectedJobTypes, skipTwilio, leadData]);
+  }, [currentStep, businessName, jobTypes, skipTwilio, leadData]);
 
   const validateStep = (step) => {
     const newErrors = {};
@@ -55,8 +53,11 @@ export default function OnboardingWizard({ isOpen, onComplete, onSkip }) {
         newErrors.businessName = 'Business name is required';
       }
     } else if (step === 2) {
-      if (selectedJobTypes.length === 0) {
-        newErrors.jobTypes = 'Select at least one job type';
+      const nonEmptyJobTypes = jobTypes.filter((type) => type.trim() !== '');
+      if (nonEmptyJobTypes.length === 0) {
+        newErrors.jobTypes = 'Enter at least one job type';
+      } else if (jobTypes.some((type) => type.trim() === '')) {
+        newErrors.jobTypes = 'All job type fields must be filled';
       }
     } else if (step === 4) {
       if (!leadData.service.trim()) {
@@ -98,7 +99,8 @@ export default function OnboardingWizard({ isOpen, onComplete, onSkip }) {
   const handleComplete = () => {
     // Save to localStorage
     localStorage.setItem('businessName', businessName);
-    localStorage.setItem('selectedJobTypes', JSON.stringify(selectedJobTypes));
+    const nonEmptyJobTypes = jobTypes.filter((type) => type.trim() !== '');
+    localStorage.setItem('jobTypes', JSON.stringify(nonEmptyJobTypes));
     localStorage.setItem('setupComplete', 'true');
 
     // Create lead if data provided
@@ -130,10 +132,13 @@ export default function OnboardingWizard({ isOpen, onComplete, onSkip }) {
     }
   };
 
-  const handleJobTypeToggle = (type) => {
-    setSelectedJobTypes((prev) =>
-      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
-    );
+  // Job type field management
+  const addJobType = () => setJobTypes([...jobTypes, '']);
+  const removeJobType = (index) => setJobTypes(jobTypes.filter((_, i) => i !== index));
+  const updateJobType = (index, value) => {
+    const updated = [...jobTypes];
+    updated[index] = value;
+    setJobTypes(updated);
   };
 
   const progressPercent = (currentStep / 4) * 100;
@@ -200,27 +205,38 @@ export default function OnboardingWizard({ isOpen, onComplete, onSkip }) {
                 What job types do you track?
               </h2>
               <p className="text-slate-600 dark:text-slate-400">
-                Select the types of jobs you handle.
+                Enter the types of jobs you handle.
               </p>
-              <div className="space-y-3">
-                {JOB_TYPES_OPTIONS.map((type) => (
-                  <label
-                    key={type}
-                    className="flex items-center gap-3 p-4 border-2 border-slate-200 dark:border-slate-600 rounded-lg cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition-colors"
-                  >
+              <div className="space-y-3 mb-4">
+                {jobTypes.map((jobType, index) => (
+                  <div key={index} className="flex gap-2">
                     <input
-                      type="checkbox"
-                      checked={selectedJobTypes.includes(type)}
-                      onChange={() => {
-                        handleJobTypeToggle(type);
+                      type="text"
+                      placeholder={`Job type ${index + 1} (e.g., Roof Repair)`}
+                      value={jobType}
+                      onChange={(e) => {
+                        updateJobType(index, e.target.value);
                         setErrors({});
                       }}
-                      className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                      className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-colors"
                     />
-                    <span className="font-medium text-slate-900 dark:text-white">{type}</span>
-                  </label>
+                    {jobTypes.length > 1 && (
+                      <button
+                        onClick={() => removeJobType(index)}
+                        className="px-3 py-2 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded-lg hover:bg-red-200 dark:hover:bg-red-800 transition-colors"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
                 ))}
               </div>
+              <button
+                onClick={addJobType}
+                className="text-sm text-blue-600 dark:text-blue-400 hover:underline font-medium"
+              >
+                + Add Job Type
+              </button>
               {errors.jobTypes && (
                 <p className="text-red-600 dark:text-red-400 text-sm">{errors.jobTypes}</p>
               )}

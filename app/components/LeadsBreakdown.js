@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import LeadQuickAdd from './LeadQuickAdd';
+import CompletionParser from './CompletionParser';
 
 export default function LeadsBreakdown() {
   const [filterSource, setFilterSource] = useState('all');
@@ -102,6 +103,16 @@ export default function LeadsBreakdown() {
     setLeads([newLead, ...leads]);
   };
 
+  const handleLeadCompleted = (leadId) => {
+    setLeads(
+      leads.map((lead) =>
+        lead.id === leadId
+          ? { ...lead, status: 'converted', value: lead.value || 0 }
+          : lead
+      )
+    );
+  };
+
   // Filter and sort
   let filtered = leads.filter((lead) => {
     if (filterSource !== 'all' && lead.source !== filterSource) return false;
@@ -143,6 +154,9 @@ export default function LeadsBreakdown() {
     <div className="space-y-6">
       {/* Quick Add Form */}
       <LeadQuickAdd onLeadAdded={handleLeadAdded} />
+
+      {/* Completion Parser */}
+      <CompletionParser leads={leads} onLeadCompleted={handleLeadCompleted} />
 
       {/* Stats Row */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

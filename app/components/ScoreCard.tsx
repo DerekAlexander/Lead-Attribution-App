@@ -8,7 +8,7 @@ interface ScoreCardProps {
     score: number;
     scoreMax: number;
     scoreTrend: string;
-  };
+  } | any;
 }
 
 export default function ScoreCard({ data }: ScoreCardProps) {

@@ -1,17 +1,20 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { brandConfig } from "@/app/config/branding";
-import { mockDashboardData } from "@/app/lib/mockData";
 import ScoreCard from "./ScoreCard";
 import MetricsGrid from "./MetricsGrid";
 import Phase1Checklist from "./Phase1Checklist";
 import IssuesFixedTicker from "./IssuesFixedTicker";
 import PDFExport from "./PDFExport";
+import { ClientData } from "@/app/lib/clientData";
 
-export default function Dashboard() {
-  const [clientName, setClientName] = useState("Bandera Jewelers");
+interface DashboardProps {
+  clientName: string;
+  data: ClientData;
+}
 
+export default function Dashboard({ clientName, data }: DashboardProps) {
   return (
     <div
       style={{
@@ -33,7 +36,7 @@ export default function Dashboard() {
               {brandConfig.company}
             </div>
           )}
-          <PDFExport clientName={clientName} data={mockDashboardData} />
+          <PDFExport clientName={clientName} data={data} />
         </div>
         <p style={{ color: brandConfig.colors.textSecondary }} className="text-sm">
           SEO Performance Dashboard for {clientName}
@@ -43,15 +46,15 @@ export default function Dashboard() {
       {/* Main Grid */}
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Score Card */}
-        <ScoreCard data={mockDashboardData} />
+        <ScoreCard data={data} />
 
         {/* Metrics Grid */}
-        <MetricsGrid metrics={mockDashboardData.metrics} />
+        <MetricsGrid metrics={data.metrics} />
 
         {/* Phase 1 Checklist + Issues Fixed (Side by side) */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <Phase1Checklist checklist={mockDashboardData.phase1Checklist} />
-          <IssuesFixedTicker issues={mockDashboardData.issuesFixed} />
+          <Phase1Checklist checklist={data.phase1Checklist} />
+          <IssuesFixedTicker issues={data.issuesFixed} />
         </div>
       </div>
     </div>

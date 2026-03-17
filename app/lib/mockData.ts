@@ -1,5 +1,8 @@
 // Mock Dashboard Data (replace with real GSC data later)
 export const mockDashboardData = {
+  id: "demo-client",
+  name: "Demo Client",
+  domain: "demo.com",
   score: 7.2,
   scoreMax: 10,
   scoreTrend: "+0.2",

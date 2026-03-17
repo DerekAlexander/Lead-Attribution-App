@@ -10,20 +10,20 @@ export const mockDashboardData = {
       label: "Organic Traffic",
       unit: "%",
       change: "+15%",
-      changeTrend: "up",
+      changeTrend: "up" as const,
     },
     topRanking: {
       value: "#3",
       label: "Best Ranking",
       subtitle: "Best Roofing in Austin",
       change: "↑1 position",
-      changeTrend: "up",
+      changeTrend: "up" as const,
     },
     reviews: {
       value: 42,
       label: "Reviews",
       change: "+5 this month",
-      changeTrend: "up",
+      changeTrend: "up" as const,
     },
   },
 
